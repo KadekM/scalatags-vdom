@@ -4,8 +4,6 @@ name := "Scala.js Tutorial"
 
 scalaVersion in ThisBuild := "2.11.8"
 
-scalafmtConfig in ThisBuild := Some(file(".scalafmt"))
-
 organization := "be.tzbob"
 name := "scalatags-vdom"
 version := "0.2-SNAPSHOT"

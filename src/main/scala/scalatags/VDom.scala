@@ -3,6 +3,7 @@ package scalatags
 import java.util.Objects
 
 import scala.language.implicitConversions
+import scalatags.VDom.StringFrag
 import scalatags.generic.{Aliases, Namespace, StylePair}
 import scalatags.stylesheet.{StyleSheetFrag, StyleTree}
 import scalatags.vdom.raw.VirtualDom.VTreeChild
@@ -116,7 +117,7 @@ object VDom
         implicit ev: StyleValue[String]): PixelStyleValue[T] =
       new VDom.GenericPixelStylePx[T](ev)
 
-    implicit def stringFrag(v: String) = new VDom.StringFrag(v)
+    implicit def stringFrag(v: String): StringFrag = new VDom.StringFrag(v)
 
     val RawFrag = VDom.RawFrag
     type RawFrag = VDom.RawFrag
@@ -126,7 +127,7 @@ object VDom
 
     def raw(s: String) = RawFrag(s)
 
-    type Tag = VDom.TypedTag[VTreeChild]
+    // type Tag = VDom.TypedTag[VTreeChild]
     val Tag = VDom.TypedTag
   }
 

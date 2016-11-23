@@ -31,7 +31,7 @@ scalacOptions ++= Seq(
 )
 
 libraryDependencies ++= Seq(
-  "com.lihaoyi" %%% "scalatags" % "0.6.0",
+  "com.lihaoyi" %%% "scalatags" % "0.6.2",
   "com.lihaoyi" %%% "utest" % "0.3.1" % "test"
 )
 

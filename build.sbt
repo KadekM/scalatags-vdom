@@ -6,7 +6,7 @@ scalaVersion in ThisBuild := "2.11.8"
 
 organization := "be.tzbob"
 name := "scalatags-vdom"
-version := "0.2-SNAPSHOT"
+version := "0.3-SNAPSHOT"
 
 requiresDOM := true
 

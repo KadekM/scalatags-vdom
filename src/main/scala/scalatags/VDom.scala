@@ -2,12 +2,15 @@ package scalatags
 
 import java.util.Objects
 
+import org.scalajs.dom
+
 import scala.language.implicitConversions
+import scala.scalajs.js
 import scalatags.VDom.StringFrag
 import scalatags.generic.{Aliases, Namespace, StylePair}
 import scalatags.stylesheet.{StyleSheetFrag, StyleTree}
 import scalatags.vdom.raw.VirtualDom.VTreeChild
-import scalatags.vdom.raw.{VText, VirtualDom}
+import scalatags.vdom.raw.{VNode, VText, VirtualDom}
 
 /**
   * A Scalatags module that generates `VNode`s when the tags are rendered.
@@ -187,22 +190,24 @@ object VDom
 
 }
 
-//
-//trait LowPriorityImplicits {
-//  implicit object bindJsAny extends generic.AttrValue[VNode, js.Any] {
-//    def apply(t: VNode, a: generic.Attr, v: js.Any): Unit = {
-//      t.asInstanceOf[js.Dynamic].updateDynamic(a.name)(v)
-//    }
-//  }
-//  implicit def bindJsAnyLike[T](implicit ev: T => js.Any) =
-//    new generic.AttrValue[VNode, T] {
-//      def apply(t: VNode, a: generic.Attr, v: T): Unit = {
-//        t.asInstanceOf[js.Dynamic].updateDynamic(a.name)(v)
-//      }
-//    }
-//  implicit class bindNode(e: dom.Node)
-//      extends generic.Frag[VNode, dom.Node] {
-//    def applyTo(t: Element) = t.appendChild(e)
-//    def render              = e
-//  }
-//}
+
+////////// TODOOOOOOOOOOO
+
+trait LowPriorityImplicits {
+  implicit object bindJsAny extends generic.AttrValue[VNode, js.Any] {
+    def apply(t: VNode, a: generic.Attr, v: js.Any): Unit = {
+      t.asInstanceOf[js.Dynamic].updateDynamic(a.name)(v)
+    }
+  }
+  implicit def bindJsAnyLike[T](implicit ev: T => js.Any) =
+    new generic.AttrValue[VNode, T] {
+      def apply(t: VNode, a: generic.Attr, v: T): Unit = {
+        t.asInstanceOf[js.Dynamic].updateDynamic(a.name)(v)
+      }
+    }
+/*  implicit class bindNode(e: dom.Node)
+      extends generic.Frag[VNode, dom.Node] {
+    def applyTo(t: Element) = t.appendChild(e)
+    def render              = e
+  }*/
+}

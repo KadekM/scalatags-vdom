@@ -8,7 +8,6 @@ organization := "be.tzbob"
 name := "scalatags-vdom"
 version := "0.2-SNAPSHOT"
 
-scalaJSUseRhino in Global := false
 requiresDOM := true
 
 scalacOptions ++= Seq(

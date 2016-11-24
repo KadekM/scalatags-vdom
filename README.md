@@ -1,3 +1,8 @@
+
+
+[![Build Status](https://travis-ci.org/KadekM/scalatags-vdom.svg?branch=master)](https://travis-ci.org/KadekM/scalatags-vdom)
+[![Maven Central](https://img.shields.io/maven-central/v/com.marekkadek/scalatags-vdom_sjs0.6_2.11.svg)](https://maven-badges.herokuapp.com/maven-central/com.marekkadek/scalatags-vdom_sjs0.6_2.11)
+
 # scalatags-vdom
 
 This project is a [Scalatags](https://github.com/lihaoyi/scalatags/) backend for [virtual-dom](https://github.com/Matt-Esch/virtual-dom).

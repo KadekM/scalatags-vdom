@@ -5,6 +5,7 @@ import scalatags.VDom.all._
 object Compiles {
 
   val labelElem = label("Default").render
+/*
 
   val inputElem = input(
   `type`:="text",
@@ -16,6 +17,7 @@ object Compiles {
   inputElem,
   labelElem
   ).render
+*/
 
 /*  assert(labelElem.textContent == "Default")
   inputElem.onfocus(null)

@@ -1,40 +1,52 @@
 enablePlugins(ScalaJSPlugin)
 
-name := "Scala.js Tutorial"
-
-scalaVersion in ThisBuild := "2.11.8"
-
-organization := "be.tzbob"
 name := "scalatags-vdom"
-version := "0.3-SNAPSHOT"
 
-requiresDOM := true
+val scalaV = "2.11.8"
 
-scalacOptions ++= Seq(
-  "-encoding",
-  "UTF-8",
-  "-target:jvm-1.6",
-  "-feature",
-  "-deprecation",
-  "-Xlint",
-  "-Yinline-warnings",
-  "-Yno-adapted-args",
-  "-Ywarn-dead-code",
-  "-Ywarn-numeric-widen",
-  "-Ywarn-value-discard",
-  "-Xfuture",
-  "-language:higherKinds",
-  "-language:existentials"
+scalaVersion in ThisBuild := scalaV
+organization in ThisBuild := "com.marekkadek"
+
+name := "scalatags-vdom"
+
+val common = Seq(
+  requiresDOM := true,
+  scalacOptions ++= Seq(
+    // following two lines must be "together"
+    "-encoding",
+    "UTF-8",
+    "-Xlint",
+    "-Xlint:missing-interpolator",
+    "-deprecation",
+    "-feature",
+    "-unchecked",
+    "-Ywarn-dead-code",
+    "-Yno-adapted-args",
+    "-language:existentials",
+    "-language:higherKinds",
+    "-language:implicitConversions",
+    "-Ywarn-value-discard",
+    "-Ywarn-numeric-widen"
+  ),
+  testFrameworks += new TestFramework("utest.runner.Framework")
 )
 
-libraryDependencies ++= Seq(
-  "com.lihaoyi" %%% "scalatags" % "0.6.2",
-  "com.lihaoyi" %%% "utest" % "0.3.1" % "test"
+val libsDeps = Seq(
+  libraryDependencies ++= Seq(
+    "com.lihaoyi" %%% "scalatags" % "0.6.2",
+    "com.lihaoyi" %%% "utest"     % "0.3.1" % "test"
+  ),
+  jsDependencies ++= Seq(
+    "org.webjars.bower" % "virtual-dom"   % "2.1.1" / "virtual-dom.js"
+    //"org.webjars.npm"   % "dom-delegator" % "13.1.0" / "dom-delegator.js"
+  )
 )
 
-jsDependencies ++= Seq(
-  "org.webjars.bower" % "virtual-dom" % "2.1.1" / "virtual-dom.js"
-)
+lazy val vdom =
+  Project(id = "vdom", base = file("modules/vdom")).settings(common, libsDeps).enablePlugins(ScalaJSPlugin)
 
-testFrameworks += new TestFramework("utest.runner.Framework")
-
+lazy val sample = Project(id = "sample", base = file("modules/sample"))
+  .settings(common, libsDeps)
+  .enablePlugins(ScalaJSPlugin)
+  .dependsOn(vdom)
+  .aggregate(vdom)

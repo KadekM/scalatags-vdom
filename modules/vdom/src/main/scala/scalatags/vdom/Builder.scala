@@ -4,11 +4,11 @@ import scala.scalajs.js
 import scalatags.vdom.raw.VNode
 import scalatags.vdom.raw.VirtualDom.VTreeChild
 
-class Builder(
-    ) {
+class Builder() {
   import scalatags.generic.Frag
 
   val attributes = js.Dictionary.empty[js.Any]
+  val properties = js.Dictionary.empty[js.Any]
   val style      = js.Dictionary.empty[String]
   val classNames = js.Array[String]()
   val children   = js.Array[Frag[_, VTreeChild]]()
@@ -22,10 +22,17 @@ class Builder(
       if (classNames.isEmpty) None
       else Some(classNames.mkString(" "))
 
-    attributes.get("class").asInstanceOf[Option[String]].flatMap { x =>
-      namesOpt.map(y => s"$x $y")
-    }.orElse(namesOpt)
+    attributes
+      .get("class")
+      .asInstanceOf[Option[String]]
+      .flatMap { x =>
+        namesOpt.map(y => s"$x $y")
+      }
+      .orElse(namesOpt)
   }
+
+  def updateProperty(key: String, value: js.Any): Unit =
+    properties.update(key, value)
 
   def updateAttribute(key: String, value: js.Any): Unit =
     attributes.update(key, value)
@@ -39,10 +46,15 @@ class Builder(
     val renderedChildren = Option(children.map(_.render)).orUndefined
 
     makeClassNameString.foreach(this.updateAttribute("class", _))
-    val properties =
-      js.Dictionary[js.Any]("attributes" -> attributes, "style" -> style)
 
-    new VNode(tag, Option(properties).orUndefined, renderedChildren)
+    val props =
+      js.Dictionary[js.Any](
+        "attributes" -> attributes,
+        "style" -> style)
+
+    properties.foreach { case (k, v) => props.update(k, v) }
+
+    new VNode(tag, Option(props).orUndefined, renderedChildren)
   }
 
 }

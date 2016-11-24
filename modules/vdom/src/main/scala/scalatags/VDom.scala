@@ -3,14 +3,17 @@ package scalatags
 import java.util.Objects
 
 import org.scalajs.dom
+import org.scalajs.dom.MouseEvent
+import org.scalajs.dom.raw._
 
 import scala.language.implicitConversions
 import scala.scalajs.js
 import scalatags.VDom.StringFrag
-import scalatags.generic.{Aliases, Namespace, StylePair}
+import scalatags.generic.{Aliases, AttrValue, Namespace, StylePair}
 import scalatags.stylesheet.{StyleSheetFrag, StyleTree}
+import scalatags.vdom.Builder
 import scalatags.vdom.raw.VirtualDom.VTreeChild
-import scalatags.vdom.raw.{VNode, VText, VirtualDom}
+import scalatags.vdom.raw._
 
 /**
   * A Scalatags module that generates `VNode`s when the tags are rendered.
@@ -38,20 +41,9 @@ object VDom
 
   object implicits extends Aggregate with DataConverters
 
-  object all
-      extends Cap
-      with Attrs
-      with Styles
-      with vdom.Tags
-      with DataConverters
-      with Aggregate
+  object all extends Cap with Attrs with Styles with vdom.Tags with DataConverters with Aggregate
 
-  object short
-      extends Cap
-      with vdom.Tags
-      with DataConverters
-      with Aggregate
-      with AbstractShort {
+  object short extends Cap with vdom.Tags with DataConverters with Aggregate with AbstractShort {
 
     object * extends Cap with Attrs with Styles
 
@@ -70,14 +62,12 @@ object VDom
 
     implicit def UnitFrag(u: Unit): VDom.StringFrag = new VDom.StringFrag("")
 
-    def makeAbstractTypedTag[T <: VTreeChild](
-        tag: String,
-        void: Boolean,
-        nameSpaceConfig: Namespace): TypedTag[T] =
+    def makeAbstractTypedTag[T <: VTreeChild](tag: String,
+                                              void: Boolean,
+                                              nameSpaceConfig: Namespace): TypedTag[T] =
       TypedTag(tag, Nil, void)
 
-    implicit class SeqFrag[A](xs: Seq[A])(implicit ev: A => Frag)
-        extends Frag {
+    implicit class SeqFrag[A](xs: Seq[A])(implicit ev: A => Frag) extends Frag {
       Objects.requireNonNull(xs)
 
       def applyTo(t: vdom.Builder): Unit = xs.foreach(_.applyTo(t))
@@ -91,16 +81,14 @@ object VDom
 
   }
 
-  trait Aggregate
-      extends generic.Aggregate[vdom.Builder, VTreeChild, VTreeChild] {
+  trait Aggregate extends generic.Aggregate[vdom.Builder, VTreeChild, VTreeChild] {
     implicit def ClsModifier(s: stylesheet.Cls): Modifier = new Modifier {
       def applyTo(t: vdom.Builder) = {
         t.addClassName(s.name)
       }
     }
 
-    implicit class StyleFrag(s: generic.StylePair[vdom.Builder, _])
-        extends StyleSheetFrag {
+    implicit class StyleFrag(s: generic.StylePair[vdom.Builder, _]) extends StyleSheetFrag {
       def applyTo(c: StyleTree) = {
         val b = new vdom.Builder
         s.applyTo(b)
@@ -116,8 +104,7 @@ object VDom
     def genericPixelStyle[T](implicit ev: StyleValue[T]): PixelStyleValue[T] =
       new VDom.GenericPixelStyle[T](ev)
 
-    def genericPixelStylePx[T](
-        implicit ev: StyleValue[String]): PixelStyleValue[T] =
+    def genericPixelStylePx[T](implicit ev: StyleValue[String]): PixelStyleValue[T] =
       new VDom.GenericPixelStylePx[T](ev)
 
     implicit def stringFrag(v: String): StringFrag = new VDom.StringFrag(v)
@@ -162,8 +149,7 @@ object VDom
     def apply(s: Style, v: T) = StylePair(s, v, ev)
   }
 
-  class GenericPixelStylePx[T](ev: StyleValue[String])
-      extends PixelStyleValue[T] {
+  class GenericPixelStylePx[T](ev: StyleValue[String]) extends PixelStyleValue[T] {
     def apply(s: Style, v: T) = StylePair(s, v + "px", ev)
   }
 
@@ -190,24 +176,59 @@ object VDom
 
 }
 
+// todo: hacky way via strings of the attributes
+// todo: add remaining stuff
+// todo: define order of implicits
 
-////////// TODOOOOOOOOOOO
-
-trait LowPriorityImplicits {
-  implicit object bindJsAny extends generic.AttrValue[VNode, js.Any] {
+sealed trait MouseEventImplicits {
+  /*  implicit object bindJsAny extends generic.AttrValue[VNode, js.Any] {
     def apply(t: VNode, a: generic.Attr, v: js.Any): Unit = {
       t.asInstanceOf[js.Dynamic].updateDynamic(a.name)(v)
     }
-  }
-  implicit def bindJsAnyLike[T](implicit ev: T => js.Any) =
-    new generic.AttrValue[VNode, T] {
-      def apply(t: VNode, a: generic.Attr, v: T): Unit = {
-        t.asInstanceOf[js.Dynamic].updateDynamic(a.name)(v)
+  }*/
+  //implicit def bindJsFunc[A](implicit ev: A =:= Function1[dom.Event, Unit]): AttrValue[Builder, A] = ???
+
+  implicit def bindMouseEvent[T <: dom.MouseEvent => Unit]: AttrValue[Builder, T] =
+    new generic.AttrValue[Builder, T] {
+      def apply(t: Builder, a: generic.Attr, v: T): Unit = {
+        val hook = a.name match {
+          case "onclick"     => SpecificElementSet[HTMLDocument](_.onclick = (e: MouseEvent) => v(e))
+          case "onmousedown" => SpecificElementSet[HTMLElement](_.onmousedown = (e: MouseEvent) => v(e))
+          case "onmouseup"   => SpecificElementSet[HTMLElement](_.onmouseup = (e: MouseEvent) => v(e))
+          case "onmousemove" => SpecificElementSet[HTMLElement](_.onmousemove = (e: MouseEvent) => v(e))
+        }
+
+        t.updateProperty("hook-" + a.name, hook)
       }
     }
-/*  implicit class bindNode(e: dom.Node)
-      extends generic.Frag[VNode, dom.Node] {
-    def applyTo(t: Element) = t.appendChild(e)
-    def render              = e
+
+  /*
+ implicit class bindNode(e: dom.Node) extends generic.Frag[VNode, dom.Node] {
+    def applyTo(t: VNode) = t.children.push(t)
+    def render            = e
   }*/
+}
+
+sealed trait EventImplicits {
+  implicit def bindEvent[T <: dom.Event => Unit]: AttrValue[Builder, T] =
+    new generic.AttrValue[Builder, T] {
+      def apply(t: Builder, a: generic.Attr, v: T): Unit = {
+        val hook = a.name match {
+          case "onchange" => SpecificElementSet[HTMLDocument](_.onchange = (e: Event) => v(e))
+          case "onsubmit" => SpecificElementSet[HTMLDocument](_.onsubmit = (e: Event) => v(e))
+          case "onload"   => SpecificElementSet[HTMLDocument](_.onload = (e: Event) => v(e))
+          case "oninput"  => SpecificElementSet[HTMLDocument](_.oninput = (e: Event) => v(e))
+        }
+
+        t.updateProperty("hook-" + a.name, hook)
+      }
+    }
+}
+
+object events {
+
+  object MouseEventImplicits extends MouseEventImplicits
+
+  object EventImplicits extends EventImplicits
+
 }

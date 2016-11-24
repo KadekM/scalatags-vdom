@@ -10,6 +10,43 @@ organization in ThisBuild := "com.marekkadek"
 
 name := "scalatags-vdom"
 
+val noPublishSettings = Seq(
+  publish := (),
+  publishLocal := (),
+  publishArtifact := false
+)
+
+val publishSettings = Seq(
+  homepage := Some(url("https://github.com/KadekM/scalatags-vdom")),
+  organizationHomepage := Some(url("https://github.com/KadekM/scalatags-vdom")),
+  licenses += ("MIT license", url("http://www.opensource.org/licenses/mit-license.php")),
+  publishMavenStyle := true,
+  publishArtifact in Test := false,
+  releasePublishArtifactsAction := PgpKeys.publishSigned.value,
+  publishTo := {
+    val nexus = "https://oss.sonatype.org/"
+    if (isSnapshot.value)
+      Some("snapshots" at nexus + "content/repositories/snapshots")
+    else
+      Some("releases" at nexus + "service/local/staging/deploy/maven2")
+  },
+  pomIncludeRepository := { _ =>
+    false
+  },
+  pomExtra :=
+    <scm>
+      <url>git@github.com:kadekm/scalatags-vdom.git</url>
+      <connection>scm:git:git@github.com:kadekm/scalatags-vdom.git</connection>
+    </scm>
+      <developers>
+        <developer>
+          <id>kadekm</id>
+          <name>Marek Kadek</name>
+          <url>https://github.com/KadekM</url>
+        </developer>
+      </developers>)
+
+
 val common = Seq(
   requiresDOM := true,
   skip in packageJSDependencies := false,
@@ -47,10 +84,10 @@ val libsDeps = Seq(
 )
 
 lazy val vdom =
-  Project(id = "vdom", base = file("modules/vdom")).settings(common, libsDeps).enablePlugins(ScalaJSPlugin)
+  Project(id = "scalatags-vdom", base = file("modules/vdom")).settings(common, publishSettings, libsDeps).enablePlugins(ScalaJSPlugin)
 
 lazy val sample = Project(id = "sample", base = file("modules/sample"))
-  .settings(common, libsDeps)
+  .settings(common, noPublishSettings, libsDeps)
   .enablePlugins(ScalaJSPlugin)
   .dependsOn(vdom)
   .aggregate(vdom)

@@ -2,7 +2,8 @@ enablePlugins(ScalaJSPlugin)
 
 name := "scalatags-vdom"
 
-val scalaV = "2.11.8"
+val scalaV = "2.12.0"
+val crossScalaV = Seq("2.11.8", "2.12.0")
 
 scalaVersion in ThisBuild := scalaV
 //scalaOrganization in ThisBuild := "org.typelevel"
@@ -46,8 +47,12 @@ val publishSettings = Seq(
         </developer>
       </developers>)
 
+noPublishSettings
 
 val common = Seq(
+  scalaVersion := scalaV,
+  crossScalaVersions := crossScalaV,
+  releaseCrossBuild := true,
   requiresDOM := true,
   skip in packageJSDependencies := false,
   scalacOptions ++= Seq(

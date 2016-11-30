@@ -98,6 +98,3 @@ lazy val sample = Project(id = "sample", base = file("modules/sample"))
   .enablePlugins(ScalaJSPlugin)
   .dependsOn(vdom)
   .aggregate(vdom)
-
-lazy val root =
-  Project(id = "scalatags-vdom-root", base = file(".")).dependsOn(vdom, sample).aggregate(vdom, sample)

@@ -3,11 +3,12 @@ package scalatags
 import java.util.Objects
 
 import org.scalajs.dom
-import org.scalajs.dom.MouseEvent
+import org.scalajs.dom.{MouseEvent, Node}
 import org.scalajs.dom.raw._
 
 import scala.language.implicitConversions
 import scala.scalajs.js
+import scala.scalajs.js.Any
 import scalatags.VDom.StringFrag
 import scalatags.generic.{Aliases, AttrValue, Namespace, StylePair}
 import scalatags.stylesheet.{StyleSheetFrag, StyleTree}
@@ -25,7 +26,7 @@ object VDom
     extends generic.Bundle[vdom.Builder, VTreeChild, VTreeChild]
     with Aliases[vdom.Builder, VTreeChild, VTreeChild] {
 
-  object attrs extends VDom.Cap with Attrs
+  object attrs extends VDom.Cap with vdom.Attrs
 
   object tags extends VDom.Cap with vdom.Tags
 
@@ -41,11 +42,11 @@ object VDom
 
   object implicits extends Aggregate with DataConverters
 
-  object all extends Cap with Attrs with Styles with vdom.Tags with DataConverters with Aggregate
+  object all extends Cap with vdom.Attrs with Styles with vdom.Tags with DataConverters with Aggregate
 
   object short extends Cap with vdom.Tags with DataConverters with Aggregate with AbstractShort {
 
-    object * extends Cap with Attrs with Styles
+    object * extends Cap with vdom.Attrs with Styles
 
   }
 
@@ -192,10 +193,10 @@ sealed trait MouseEventImplicits {
     new generic.AttrValue[Builder, T] {
       def apply(t: Builder, a: generic.Attr, v: T): Unit = {
         val hook = a.name match {
-          case "onclick"     => SpecificElementSet[HTMLDocument](_.onclick = (e: MouseEvent) => v(e))
-          case "onmousedown" => SpecificElementSet[HTMLElement](_.onmousedown = (e: MouseEvent) => v(e))
-          case "onmouseup"   => SpecificElementSet[HTMLElement](_.onmouseup = (e: MouseEvent) => v(e))
-          case "onmousemove" => SpecificElementSet[HTMLElement](_.onmousemove = (e: MouseEvent) => v(e))
+          case "onclick"     => SpecificElementSet[HTMLDocument](_.onclick = v)
+          case "onmousedown" => SpecificElementSet[HTMLElement](_.onmousedown = v)
+          case "onmouseup"   => SpecificElementSet[HTMLElement](_.onmouseup = v)
+          case "onmousemove" => SpecificElementSet[HTMLElement](_.onmousemove = v)
         }
 
         t.updateProperty("hook-" + a.name, hook)
@@ -214,10 +215,45 @@ sealed trait EventImplicits {
     new generic.AttrValue[Builder, T] {
       def apply(t: Builder, a: generic.Attr, v: T): Unit = {
         val hook = a.name match {
-          case "onchange" => SpecificElementSet[HTMLDocument](_.onchange = (e: Event) => v(e))
-          case "onsubmit" => SpecificElementSet[HTMLDocument](_.onsubmit = (e: Event) => v(e))
-          case "onload"   => SpecificElementSet[HTMLDocument](_.onload = (e: Event) => v(e))
-          case "oninput"  => SpecificElementSet[HTMLDocument](_.oninput = (e: Event) => v(e))
+          case "onchange" => SpecificElementSet[HTMLDocument](_.onchange = v)
+          case "onsubmit" => SpecificElementSet[HTMLDocument](_.onsubmit = v)
+          case "onload"   => SpecificElementSet[HTMLDocument](_.onload = v)
+          case "oninput"  => SpecificElementSet[HTMLDocument](_.oninput = v)
+        }
+
+        t.updateProperty("hook-" + a.name, hook)
+      }
+    }
+}
+
+// Catches anything with Event, so by importing this user gets only most general type
+sealed trait AllEventsImplicits {
+  implicit def bindVDom[T <: dom.Node => Unit]: AttrValue[Builder, T] =
+    new generic.AttrValue[Builder, T] {
+      def apply(t: Builder, a: generic.Attr, v: T): Unit = {
+        t.updateProperty("hook-" + a.name, new OnNodeHooked(v) )
+      }
+    }
+
+  implicit def bindEvent[T <: dom.Event => Unit]: AttrValue[Builder, T] =
+    new generic.AttrValue[Builder, T] {
+      def apply(t: Builder, a: generic.Attr, v: T): Unit = {
+        val hook = a.name match {
+          case "onbeforeactivate"   => SpecificElementSet[HTMLDocument](_.onbeforeactivate = v)
+          case "onactivate"         => SpecificElementSet[HTMLDocument](_.onactivate = v)
+          case "onbeforedeactivate" => SpecificElementSet[HTMLDocument](_.onbeforedeactivate = v)
+          case "ondeactivate"       => SpecificElementSet[HTMLDocument](_.ondeactivate = v)
+          case "onload"             => SpecificElementSet[HTMLDocument](_.onload = v)
+          case "onchange"           => SpecificElementSet[HTMLDocument](_.onchange = v)
+          case "onreadystatechange" => SpecificElementSet[HTMLDocument](_.onreadystatechange = v)
+
+          case "onsubmit" => SpecificElementSet[HTMLDocument](_.onsubmit = v)
+          case "oninput"  => SpecificElementSet[HTMLDocument](_.oninput = v)
+
+          case "onclick"     => SpecificElementSet[HTMLDocument](_.onclick = v)
+          case "onmousedown" => SpecificElementSet[HTMLElement](_.onmousedown = v)
+          case "onmouseup"   => SpecificElementSet[HTMLElement](_.onmouseup = v)
+          case "onmousemove" => SpecificElementSet[HTMLElement](_.onmousemove = v)
         }
 
         t.updateProperty("hook-" + a.name, hook)
@@ -231,4 +267,5 @@ object events {
 
   object EventImplicits extends EventImplicits
 
+  object AllEventsImplicits extends AllEventsImplicits
 }

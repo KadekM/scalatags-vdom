@@ -35,3 +35,10 @@ class SpecificElementSet[A <: dom.Node](f: A => Unit) extends Hook {
 object SpecificElementSet {
   def apply[A <: dom.Node](f: A => Unit): SpecificElementSet[A] = new SpecificElementSet[A](f)
 }
+
+@ScalaJSDefined
+class OnNodeHooked(f: dom.Node => Unit) extends Hook {
+  override def hook(node: dom.Node, propertyName: String, previousValue: Any): Unit = {
+    f(node)
+  }
+}

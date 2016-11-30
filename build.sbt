@@ -2,7 +2,7 @@ enablePlugins(ScalaJSPlugin)
 
 name := "scalatags-vdom"
 
-val scalaV = "2.11.8"
+val scalaV      = "2.11.8"
 val crossScalaV = Seq("2.11.8", "2.12.0")
 
 scalaVersion in ThisBuild := scalaV
@@ -82,17 +82,22 @@ val libsDeps = Seq(
     "com.lihaoyi" %%% "utest"     % "0.4.4" % "test"
   ),
   jsDependencies ++= Seq(
-    "org.webjars.bower" % "virtual-dom"   % "2.1.1" / "virtual-dom.js"
+    "org.webjars.bower" % "virtual-dom" % "2.1.1" / "virtual-dom.js"
     //,"org.webjars" % "requirejs" % "2.1.22" / "require.js"
     //,"org.webjars.npm"   % "dom-delegator" % "13.1.0" / "13.1.0/dom-delegator.js"
   )
 )
 
 lazy val vdom =
-  Project(id = "scalatags-vdom", base = file("modules/vdom")).settings(common, publishSettings, libsDeps).enablePlugins(ScalaJSPlugin)
+  Project(id = "scalatags-vdom", base = file("modules/vdom"))
+    .settings(common, publishSettings, libsDeps)
+    .enablePlugins(ScalaJSPlugin)
 
 lazy val sample = Project(id = "sample", base = file("modules/sample"))
   .settings(common, noPublishSettings, libsDeps)
   .enablePlugins(ScalaJSPlugin)
   .dependsOn(vdom)
   .aggregate(vdom)
+
+lazy val root =
+  Project(id = "scalatags-vdom-root", base = file(".")).dependsOn(vdom, sample).aggregate(vdom, sample)

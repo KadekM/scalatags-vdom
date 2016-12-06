@@ -3,7 +3,7 @@ enablePlugins(ScalaJSPlugin)
 name := "scalatags-vdom"
 
 val scalaV      = "2.11.8"
-val crossScalaV = Seq("2.11.8", "2.12.0")
+val crossScalaV = Seq("2.11.8", "2.12.1")
 
 scalaVersion in ThisBuild := scalaV
 //scalaOrganization in ThisBuild := "org.typelevel"

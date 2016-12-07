@@ -20,9 +20,13 @@ object Main extends JSApp {
     println("Started")
     val appDiv = dom.document.getElementById("app")
 
-    /*    val inputText = input(`type` := "text", value := "something", onvdomload := { (e: dom.Node) =>
-      global.console.log(e); ()
-    })*/
+    val inputText = input(`type` := "text", value := "something", onvdomload := {
+      (e: dom.Node, prop: String, prev: Option[js.Object]) =>
+        prev.foreach { x =>
+          //println("changed");global.console.log(x)
+        }
+        println("done")
+    })
 
     //val inputText = input(`type` := "text", value := "something")
     val alertButton = input(`type` := "button", value := "alert", onclick := "alert();")
@@ -31,11 +35,14 @@ object Main extends JSApp {
     })
 
     def static(counter: Int) = div(
-      //inputText,
+      inputText,
       alertButton,
       printlnButton,
-      input(value := counter.toString, onvdomload := { (e: dom.Node, prop: String, prev: Option[js.Object]) =>
-        global.console.log(e); ()
+      input(value := counter.toString, onvdomload := {
+        (e: dom.Node, prop: String, prev: Option[js.Object]) =>
+          prev.foreach { x =>
+            println("counter changed");global.console.log(x)
+          }
       })
     )
 

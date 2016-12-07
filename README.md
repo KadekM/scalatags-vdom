@@ -9,6 +9,13 @@ This project is a [Scalatags](https://github.com/lihaoyi/scalatags/) backend for
 
 It includes a barebones Scala.js mapping to the virtual-dom project in ```scalatags.vdom.raw.VirtualDom```. 
 
+## Install
+
+```scala
+libraryDependencies += "com.marekkadek" %%% "scalatags-vdom" % "0.4.0-SNAPSHOT"
+```
+
+
 ## Usage
 
 It's usage is identical to the other Scalatags backends:

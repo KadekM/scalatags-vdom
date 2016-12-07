@@ -228,7 +228,7 @@ sealed trait EventImplicits {
 
 // Catches anything with Event, so by importing this user gets only most general type
 sealed trait AllEventsImplicits {
-  implicit def bindVDom[T <: dom.Node => Unit]: AttrValue[Builder, T] =
+  implicit def bindVDom[T <: (dom.Node, String, Option[js.Object]) => Unit]: AttrValue[Builder, T] =
     new generic.AttrValue[Builder, T] {
       def apply(t: Builder, a: generic.Attr, v: T): Unit = {
         t.updateProperty("hook-" + a.name, new OnNodeHooked(v))

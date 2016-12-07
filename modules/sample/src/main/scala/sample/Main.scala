@@ -5,9 +5,10 @@ import org.scalajs.dom.{Event, MouseEvent}
 
 import scala.scalajs.js.JSApp
 import scala.scalajs.js.Dynamic.global
-
 import rxscalajs.Observable
+
 import scala.concurrent.duration._
+import scala.scalajs.js
 
 object Main extends JSApp {
   import scalatags.VDom.all._
@@ -19,9 +20,10 @@ object Main extends JSApp {
     println("Started")
     val appDiv = dom.document.getElementById("app")
 
-    val inputText = input(`type` := "text", value := "something", onvdomload := { (e: dom.Node) =>
+    /*    val inputText = input(`type` := "text", value := "something", onvdomload := { (e: dom.Node) =>
       global.console.log(e); ()
-    })
+    })*/
+
     //val inputText = input(`type` := "text", value := "something")
     val alertButton = input(`type` := "button", value := "alert", onclick := "alert();")
     val printlnButton = input(`type` := "button", value := "println", onclick := { (e: MouseEvent) =>
@@ -29,10 +31,12 @@ object Main extends JSApp {
     })
 
     def static(counter: Int) = div(
-      inputText,
+      //inputText,
       alertButton,
       printlnButton,
-      p(counter.toString)
+      input(value := counter.toString, onvdomload := { (e: dom.Node, prop: String, prev: Option[js.Object]) =>
+        global.console.log(e); ()
+      })
     )
 
     //println("-- alertButton --")
@@ -48,15 +52,17 @@ object Main extends JSApp {
     val root = VirtualDom.create(vnodeR)
     appDiv.appendChild(root)
 
-    Observable.interval(1500.millis).scan((vnodeR, root)) {
-      case ((prev, node), i) =>
+    Observable
+      .interval(1000.millis)
+      .scan((vnodeR, root)) {
+        case ((prev, node), i) =>
+          val _next  = static(i)
+          val nextR  = _next.render
+          val patch  = VirtualDom.diff(prev, nextR)
+          val nowDiv = VirtualDom.patch(node, patch)
 
-        val _next  = static(i)
-        val nextR  = _next.render
-        val patch  = VirtualDom.diff(prev, nextR)
-        val nowDiv = VirtualDom.patch(node, patch)
-
-        (nextR, nowDiv)
-    }.subscribe(x => println("## re-rendered ##"))
+          (nextR, nowDiv)
+      }
+      .subscribe(x => println("## re-rendered ##"))
   }
 }

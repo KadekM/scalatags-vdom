@@ -6,6 +6,9 @@ import org.scalajs.dom.{Event, MouseEvent}
 import scala.scalajs.js.JSApp
 import scala.scalajs.js.Dynamic.global
 
+import rxscalajs.Observable
+import scala.concurrent.duration._
+
 object Main extends JSApp {
   import scalatags.VDom.all._
   import scalatags.vdom.raw.VirtualDom
@@ -16,15 +19,20 @@ object Main extends JSApp {
     println("Started")
     val appDiv = dom.document.getElementById("app")
 
-    val inputText = input(`type` := "text", value := "something", onvdomload := {(e: dom.Node) => global.console.log(e); ()})
+    val inputText = input(`type` := "text", value := "something", onvdomload := { (e: dom.Node) =>
+      global.console.log(e); ()
+    })
     //val inputText = input(`type` := "text", value := "something")
-    val alertButton = input(`type` := "button", value := "alert", onclick := "alert();" )
-    val printlnButton = input(`type` := "button", value := "println", onclick := { (e: MouseEvent) => println("mouse event: " + e) })
+    val alertButton = input(`type` := "button", value := "alert", onclick := "alert();")
+    val printlnButton = input(`type` := "button", value := "println", onclick := { (e: MouseEvent) =>
+      println("mouse event: " + e)
+    })
 
-    val vdom = div(
+    def static(counter: Int) = div(
       inputText,
       alertButton,
-      printlnButton
+      printlnButton,
+      p(counter.toString)
     )
 
     //println("-- alertButton --")
@@ -35,13 +43,20 @@ object Main extends JSApp {
     //global.console.log(printlnButton.render.hooks)
     //global.console.log(printlnButton.render.properties)
 
-    val vnode = vdom.render
+    val vnodeR = static(0).render
 
-    val el = VirtualDom.create(vnode)
-    appDiv.appendChild(el)
+    val root = VirtualDom.create(vnodeR)
+    appDiv.appendChild(root)
 
+    Observable.interval(1500.millis).scan((vnodeR, root)) {
+      case ((prev, node), i) =>
+
+        val _next  = static(i)
+        val nextR  = _next.render
+        val patch  = VirtualDom.diff(prev, nextR)
+        val nowDiv = VirtualDom.patch(node, patch)
+
+        (nextR, nowDiv)
+    }.subscribe(x => println("## re-rendered ##"))
   }
 }
-
-
-

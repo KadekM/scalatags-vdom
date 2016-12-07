@@ -95,6 +95,9 @@ lazy val vdom =
 
 lazy val sample = Project(id = "sample", base = file("modules/sample"))
   .settings(common, noPublishSettings, libsDeps)
+  .settings(
+    libraryDependencies += "com.marekkadek" %%% "rxscala-js-cats" % "0.2.0-SNAPSHOT" changing()
+  )
   .enablePlugins(ScalaJSPlugin)
   .dependsOn(vdom)
   .aggregate(vdom)
